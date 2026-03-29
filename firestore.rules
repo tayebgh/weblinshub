@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: categories
+    // Fields: name, slug, description, icon, color, order, createdAt, updatedAt
+    //
+    // Collection: weblinks
+    // Fields: siteName, url, slug, shortDescription, fullDescription, favicon, thumbnail, tags, categoryId, views, featured, verified, metaTitle, metaDescription, metaKeywords, createdAt, updatedAt, publishedAt, authorId
+    //
+    // Collection: tags
+    // Fields: name, slug, createdAt
+    //
+    // Collection: blogPosts
+    // Fields: title, slug, excerpt, content, thumbnail, thumbnailAlt, authorId, published, views, metaTitle, metaDescription, metaKeywords, createdAt, updatedAt, publishedAt
+    //
+    // Collection: users
+    // Fields: name, email, image, role, createdAt, updatedAt
+    //
+    // Collection: bookmarks
+    // Fields: userId, weblinkId, createdAt
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "tayebghamam@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Domain Validators
+    function isValidCategory(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.slug is string && data.slug.size() > 0 && data.slug.size() < 100;
+    }
+
+    function isValidWeblink(data) {
+      return data.siteName is string && data.siteName.size() > 0 && data.siteName.size() < 200 &&
+             data.url is string && data.url.size() > 0 &&
+             data.slug is string && data.slug.size() > 0 &&
+             data.categoryId is string;
+    }
+
+    function isValidUser(data) {
+      return data.email is string && data.email.size() > 0;
+    }
+
+    function isValidBookmark(data) {
+      return data.userId == request.auth.uid && data.weblinkId is string;
+    }
+
+    // Rules
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /weblinks/{weblinkId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']);
+      allow delete: if isAdmin();
+    }
+
+    match /tags/{tagId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /blogPosts/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /bookmarks/{bookmarkId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidBookmark(request.resource.data);
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+  }
+}

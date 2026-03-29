@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "Category": {
+      "title": "Category",
+      "description": "A category for weblinks",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the category" },
+        "slug": { "type": "string", "description": "The unique slug for the category" },
+        "description": { "type": "string", "description": "A brief description" },
+        "icon": { "type": "string", "description": "Icon name from lucide-react" },
+        "color": { "type": "string", "description": "Hex or tailwind color class" },
+        "order": { "type": "integer", "description": "Display order" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "slug"]
+    },
+    "WebLink": {
+      "title": "WebLink",
+      "description": "A curated website link",
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string" },
+        "url": { "type": "string" },
+        "slug": { "type": "string" },
+        "shortDescription": { "type": "string" },
+        "fullDescription": { "type": "string" },
+        "favicon": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "categoryId": { "type": "string" },
+        "views": { "type": "integer" },
+        "featured": { "type": "boolean" },
+        "verified": { "type": "boolean" },
+        "metaTitle": { "type": "string" },
+        "metaDescription": { "type": "string" },
+        "metaKeywords": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "authorId": { "type": "string" }
+      },
+      "required": ["siteName", "url", "slug", "categoryId"]
+    },
+    "Tag": {
+      "title": "Tag",
+      "description": "A tag for weblinks",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "slug"]
+    },
+    "BlogPost": {
+      "title": "BlogPost",
+      "description": "An article on the blog",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "thumbnailAlt": { "type": "string" },
+        "authorId": { "type": "string" },
+        "published": { "type": "boolean" },
+        "views": { "type": "integer" },
+        "metaTitle": { "type": "string" },
+        "metaDescription": { "type": "string" },
+        "metaKeywords": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "publishedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "slug", "content", "authorId"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user of the platform",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "image": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email"]
+    },
+    "Bookmark": {
+      "title": "Bookmark",
+      "description": "A user's bookmarked weblink",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "weblinkId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "weblinkId"]
+    }
+  },
+  "firestore": {
+    "/categories": { "schema": "Category", "description": "Collection of categories" },
+    "/weblinks": { "schema": "WebLink", "description": "Collection of weblinks" },
+    "/tags": { "schema": "Tag", "description": "Collection of tags" },
+    "/blogPosts": { "schema": "BlogPost", "description": "Collection of blog posts" },
+    "/users": { "schema": "User", "description": "Collection of users" },
+    "/bookmarks": { "schema": "Bookmark", "description": "Collection of bookmarks" }
+  }
+}
